@@ -4,8 +4,25 @@ import SearchForm from "../components/SearchForm";
 import styles from "../styles/Home.module.css";
 import { InputFile } from "../components/InputFile";
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default function Home() {
-  function handleUpload() {}
+  async function handleUpload(event: React.FormEvent<HTMLInputElement>) {
+    const formData = new FormData();
+
+    if (event.currentTarget.files && event.currentTarget.files[0]) {
+      formData.append("file", event.currentTarget.files[0]);
+    }
+
+    await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+  }
 
   return (
     <div className={styles.container}>
