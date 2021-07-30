@@ -1,8 +1,14 @@
 import Head from "next/head";
-import Image from "next/image";
 import SearchForm from "../components/SearchForm";
 import styles from "../styles/Home.module.css";
 import { InputFile } from "../components/InputFile";
+import { useState } from "react";
+import {
+  EpubView, // Underlaying epub-canvas (wrapper for epub.js iframe)
+  EpubViewStyles, // Styles for EpubView, you can pass it to the instance as a style prop for customize it
+  ReactReader, // A simple epub-reader with left/right button and chapter navigation
+  ReactReaderStyles, // Styles for the epub-reader it you need to customize it
+} from "react-reader";
 
 export const config = {
   api: {
@@ -11,6 +17,8 @@ export const config = {
 };
 
 export default function Home() {
+  const [bookPath, setBookPath] = useState("");
+
   async function handleUpload(event: React.FormEvent<HTMLInputElement>) {
     const formData = new FormData();
 
@@ -21,6 +29,8 @@ export default function Home() {
     await fetch("/api/upload", {
       method: "POST",
       body: formData,
+    }).then(async (res) => {
+      setBookPath((await res.json()).files.file.path);
     });
   }
 
@@ -36,32 +46,32 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>Welcome to my E-Book Reader</h1>
+        {bookPath ? (
+          <>
+            {" "}
+            <ReactReader
+              url={bookPath}
+              location={"epubcfi(/6/2[cover]!/6)"}
+              locationChanged={(epubcifi) => console.log(epubcifi)}
+            />
+          </>
+        ) : (
+          <>
+            <h1 className={styles.title}>Welcome to my E-Book Reader</h1>
 
-        <h1>Search</h1>
-        <SearchForm />
+            <h1>Search</h1>
+            <SearchForm />
 
-        <h1>Or upload your own ebook to read:</h1>
-        <InputFile
-          input={{
-            id: "input-control-id",
-            onChange: handleUpload,
-          }}
-        />
+            <h1>Or upload your own ebook to read:</h1>
+            <InputFile
+              input={{
+                id: "input-control-id",
+                onChange: handleUpload,
+              }}
+            />
+          </>
+        )}
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{" "}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
   );
 }
